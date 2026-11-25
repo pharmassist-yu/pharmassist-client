@@ -1,3 +1,25 @@
+
+export interface RegistrationRequest {
+  fullName: string;
+  email: string;
+  password: string;
+}
+
+export type RegistrationResult =
+  { success: true } | { success: false; error: 'email-already-registered' };
+
+export const MOCK_REGISTERED_EMAIL = 'registered@pharmassist.test';
+
+export async function register(input: RegistrationRequest): Promise<RegistrationResult> {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  if (input.email.trim().toLowerCase() === MOCK_REGISTERED_EMAIL) {
+    return { success: false, error: 'email-already-registered' };
+  }
+
+  return { success: true };
+}
+
 const DEFAULT_TIMEOUT_MS = 8000;
 
 const rawBaseUrl = process.env.EXPO_PUBLIC_API_URL?.trim() ?? '';
