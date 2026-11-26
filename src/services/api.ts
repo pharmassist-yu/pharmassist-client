@@ -1,14 +1,37 @@
-
 export interface RegistrationRequest {
   fullName: string;
   email: string;
   password: string;
 }
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export type LoginResult =
+  { success: true; token: string } | { success: false; error: 'invalid-credentials' };
+
 export type RegistrationResult =
   { success: true } | { success: false; error: 'email-already-registered' };
 
 export const MOCK_REGISTERED_EMAIL = 'registered@pharmassist.test';
+export const MOCK_LOGIN_EMAIL = 'test@pharmassist.test';
+export const MOCK_LOGIN_PASSWORD = 'PharmAssist123!';
+const MOCK_AUTH_TOKEN = 'mock-pharmassist-auth-token';
+
+export async function login(input: LoginRequest): Promise<LoginResult> {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  if (
+    input.email.trim().toLowerCase() !== MOCK_LOGIN_EMAIL ||
+    input.password !== MOCK_LOGIN_PASSWORD
+  ) {
+    return { success: false, error: 'invalid-credentials' };
+  }
+
+  return { success: true, token: MOCK_AUTH_TOKEN };
+}
 
 export async function register(input: RegistrationRequest): Promise<RegistrationResult> {
   await new Promise((resolve) => setTimeout(resolve, 500));

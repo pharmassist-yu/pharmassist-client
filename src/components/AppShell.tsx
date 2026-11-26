@@ -4,6 +4,7 @@ import { type Href, router, usePathname } from 'expo-router';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
+import { useAuth } from '@/contexts/AuthContext';
 import { FontSizes } from '@/constants/typography';
 
 export const DESKTOP_BREAKPOINT = 768;
@@ -78,6 +79,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const { signOut } = useAuth();
   const isDesktop = useIsDesktop();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
@@ -90,7 +92,8 @@ export function AppShell({ children }: AppShellProps) {
   };
 
   const handleLogout = () => {
-    resetTo('/welcome');
+    signOut();
+    router.replace('/welcome');
   };
 
   if (isDesktop) {
