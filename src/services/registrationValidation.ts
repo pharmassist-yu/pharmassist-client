@@ -1,4 +1,4 @@
-export const MIN_PASSWORD_LENGTH = 8;
+export const MIN_PASSWORD_LENGTH = 15;
 
 export interface RegistrationFormValues {
   fullName: string;
