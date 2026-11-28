@@ -26,3 +26,14 @@ PharmAssist: AI-supported personalized medication information system. Checks dru
 - `npm run lint` — Run ESLint
 - `npm run format:check` — Check Prettier formatting
 
+## Mock login
+
+The login screen currently uses a fictional in-memory test account:
+
+- **Email:** `test@pharmassist.test`
+- **Password:** `PharmAssist123!`
+
+The mock authentication service returns a fake token for this account. The session
+exists only in application memory and is cleared on logout or app restart; persistent
+authentication and secure token storage are intentionally deferred.
+

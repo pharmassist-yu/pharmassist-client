@@ -1,12 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { resetTo, useIsDesktop } from '@/components/AppShell';
+import { useIsDesktop } from '@/components/AppShell';
 import { PlaceholderCard } from '@/components/PlaceholderCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Colors } from '@/constants/colors';
+import { useAuth } from '@/contexts/AuthContext';
 import { FontSizes } from '@/constants/typography';
 
 export default function HealthProfileScreen() {
+  const { signOut } = useAuth();
   const isDesktop = useIsDesktop();
 
   return (
@@ -26,7 +29,10 @@ export default function HealthProfileScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Çıkış Yap"
-              onPress={() => resetTo('/welcome')}
+              onPress={() => {
+                signOut();
+                router.replace('/welcome');
+              }}
               style={({ pressed }) => [styles.logoutButton, pressed && styles.pressed]}
             >
               <Ionicons name="log-out-outline" size={20} color={Colors.danger} />
