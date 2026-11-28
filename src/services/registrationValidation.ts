@@ -26,7 +26,7 @@ export function validateRegistration(values: RegistrationFormValues): Registrati
 
   if (!values.password) {
     errors.password = 'Şifre alanı zorunludur.';
-  } else if (values.password.length < MIN_PASSWORD_LENGTH) {
+  } else if (Array.from(values.password).length < MIN_PASSWORD_LENGTH) {
     errors.password = `Şifre en az ${MIN_PASSWORD_LENGTH} karakter olmalıdır.`;
   }
 
