@@ -1,3 +1,5 @@
+import { countGraphemes } from 'unicode-segmenter/grapheme';
+
 export const MIN_PASSWORD_LENGTH = 15;
 
 export interface RegistrationFormValues {
@@ -26,7 +28,7 @@ export function validateRegistration(values: RegistrationFormValues): Registrati
 
   if (!values.password) {
     errors.password = 'Şifre alanı zorunludur.';
-  } else if (Array.from(values.password).length < MIN_PASSWORD_LENGTH) {
+  } else if (countGraphemes(values.password) < MIN_PASSWORD_LENGTH) {
     errors.password = `Şifre en az ${MIN_PASSWORD_LENGTH} karakter olmalıdır.`;
   }
 

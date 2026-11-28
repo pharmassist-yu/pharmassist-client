@@ -1,8 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Pressable,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -33,6 +36,8 @@ export default function RegisterScreen() {
   const [errors, setErrors] = useState<RegistrationFieldErrors>({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isPasswordConfirmationVisible, setIsPasswordConfirmationVisible] = useState(false);
   const [feedback, setFeedback] = useState<{ message: string; success: boolean } | null>(null);
 
   const updateField = (field: keyof RegistrationFormValues, value: string) => {
@@ -45,6 +50,7 @@ export default function RegisterScreen() {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     setHasSubmitted(true);
     setFeedback(null);
 
@@ -69,6 +75,8 @@ export default function RegisterScreen() {
           password: '',
           passwordConfirmation: '',
         }));
+        setIsPasswordVisible(false);
+        setIsPasswordConfirmationVisible(false);
       } else {
         setFeedback({ message: 'Bu e-posta adresi zaten kayıtlı.', success: false });
       }
@@ -91,130 +99,182 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        behavior={
+          Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined
+        }
+        style={styles.keyboardAvoidingView}
       >
-        <View style={styles.container}>
-          <Text style={styles.brand}>PharmAssist</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <Text style={styles.brand}>PharmAssist</Text>
 
-          <ScreenHeader
-            title="Kayıt Ol"
-            subtitle="Yeni bir PharmAssist hesabı oluşturun."
-            showBack
-            backFallback="/welcome"
-          />
+            <ScreenHeader
+              title="Kayıt Ol"
+              subtitle="Yeni bir PharmAssist hesabı oluşturun."
+              showBack
+              backFallback="/welcome"
+            />
 
-          <View style={styles.form}>
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Ad Soyad</Text>
-              <TextInput
-                accessibilityLabel="Ad Soyad"
-                accessibilityHint="Adınızı ve soyadınızı girin."
-                autoComplete="name"
-                autoCapitalize="words"
-                onChangeText={(value) => updateField('fullName', value)}
-                placeholder="Adınız Soyadınız"
-                placeholderTextColor={Colors.textSecondary}
-                returnKeyType="next"
-                style={[styles.input, errors.fullName && styles.inputError]}
-                value={values.fullName}
-              />
-              {renderFieldError(errors.fullName)}
-            </View>
+            <View style={styles.form}>
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Ad Soyad</Text>
+                <TextInput
+                  accessibilityLabel="Ad Soyad"
+                  accessibilityHint="Adınızı ve soyadınızı girin."
+                  autoComplete="name"
+                  autoCapitalize="words"
+                  onChangeText={(value) => updateField('fullName', value)}
+                  placeholder="Adınız Soyadınız"
+                  placeholderTextColor={Colors.textSecondary}
+                  returnKeyType="next"
+                  style={[styles.input, errors.fullName && styles.inputError]}
+                  value={values.fullName}
+                />
+                {renderFieldError(errors.fullName)}
+              </View>
 
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>E-posta</Text>
-              <TextInput
-                accessibilityLabel="E-posta"
-                accessibilityHint="E-posta adresinizi girin."
-                autoComplete="email"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                onChangeText={(value) => updateField('email', value)}
-                placeholder="ornek@eposta.com"
-                placeholderTextColor={Colors.textSecondary}
-                returnKeyType="next"
-                style={[styles.input, errors.email && styles.inputError]}
-                value={values.email}
-              />
-              {renderFieldError(errors.email)}
-            </View>
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>E-posta</Text>
+                <TextInput
+                  accessibilityLabel="E-posta"
+                  accessibilityHint="E-posta adresinizi girin."
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  onChangeText={(value) => updateField('email', value)}
+                  placeholder="ornek@eposta.com"
+                  placeholderTextColor={Colors.textSecondary}
+                  returnKeyType="next"
+                  style={[styles.input, errors.email && styles.inputError]}
+                  value={values.email}
+                />
+                {renderFieldError(errors.email)}
+              </View>
 
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Şifre</Text>
-              <TextInput
-                accessibilityLabel="Şifre"
-                accessibilityHint={`En az ${MIN_PASSWORD_LENGTH} karakter uzunluğunda bir şifre girin.`}
-                autoComplete="new-password"
-                onChangeText={(value) => updateField('password', value)}
-                placeholder="Şifreniz"
-                placeholderTextColor={Colors.textSecondary}
-                secureTextEntry
-                style={[styles.input, errors.password && styles.inputError]}
-                value={values.password}
-              />
-              {renderFieldError(errors.password)}
-            </View>
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Şifre</Text>
+                <View style={[styles.passwordInputRow, errors.password && styles.inputError]}>
+                  <TextInput
+                    accessibilityLabel="Şifre"
+                    accessibilityHint={`En az ${MIN_PASSWORD_LENGTH} karakter uzunluğunda bir şifre girin.`}
+                    autoComplete="new-password"
+                    onChangeText={(value) => updateField('password', value)}
+                    placeholder="Şifreniz"
+                    placeholderTextColor={Colors.textSecondary}
+                    secureTextEntry={!isPasswordVisible}
+                    style={styles.passwordInput}
+                    value={values.password}
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={isPasswordVisible ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                    accessibilityState={{ selected: isPasswordVisible }}
+                    onPress={() => setIsPasswordVisible((visible) => !visible)}
+                    style={({ pressed }) => [
+                      styles.passwordVisibilityButton,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <Ionicons
+                      name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                      size={22}
+                      color={Colors.textSecondary}
+                    />
+                  </Pressable>
+                </View>
+                {renderFieldError(errors.password)}
+              </View>
 
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Şifre Tekrarı</Text>
-              <TextInput
-                accessibilityLabel="Şifre Tekrarı"
-                accessibilityHint="Şifrenizi tekrar girin."
-                autoComplete="new-password"
-                onChangeText={(value) => updateField('passwordConfirmation', value)}
-                placeholder="Şifrenizi tekrar girin"
-                placeholderTextColor={Colors.textSecondary}
-                secureTextEntry
-                style={[styles.input, errors.passwordConfirmation && styles.inputError]}
-                value={values.passwordConfirmation}
-              />
-              {renderFieldError(errors.passwordConfirmation)}
-            </View>
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Şifre Tekrarı</Text>
+                <View
+                  style={[
+                    styles.passwordInputRow,
+                    errors.passwordConfirmation && styles.inputError,
+                  ]}
+                >
+                  <TextInput
+                    accessibilityLabel="Şifre Tekrarı"
+                    accessibilityHint="Şifrenizi tekrar girin."
+                    autoComplete="new-password"
+                    onChangeText={(value) => updateField('passwordConfirmation', value)}
+                    placeholder="Şifrenizi tekrar girin"
+                    placeholderTextColor={Colors.textSecondary}
+                    secureTextEntry={!isPasswordConfirmationVisible}
+                    style={styles.passwordInput}
+                    value={values.passwordConfirmation}
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      isPasswordConfirmationVisible
+                        ? 'Şifre tekrarını gizle'
+                        : 'Şifre tekrarını göster'
+                    }
+                    accessibilityState={{ selected: isPasswordConfirmationVisible }}
+                    onPress={() => setIsPasswordConfirmationVisible((visible) => !visible)}
+                    style={({ pressed }) => [
+                      styles.passwordVisibilityButton,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <Ionicons
+                      name={isPasswordConfirmationVisible ? 'eye-off-outline' : 'eye-outline'}
+                      size={22}
+                      color={Colors.textSecondary}
+                    />
+                  </Pressable>
+                </View>
+                {renderFieldError(errors.passwordConfirmation)}
+              </View>
 
-            {feedback ? (
-              <Text
-                accessibilityRole="alert"
-                style={[
-                  styles.feedback,
-                  feedback.success ? styles.successFeedback : styles.errorFeedback,
+              {feedback ? (
+                <Text
+                  accessibilityRole="alert"
+                  style={[
+                    styles.feedback,
+                    feedback.success ? styles.successFeedback : styles.errorFeedback,
+                  ]}
+                >
+                  {feedback.message}
+                </Text>
+              ) : null}
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Kayıt Ol"
+                accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }}
+                disabled={isSubmitting}
+                onPress={handleSubmit}
+                style={({ pressed }) => [
+                  styles.primaryButton,
+                  pressed && !isSubmitting && styles.pressed,
+                  isSubmitting && styles.disabledButton,
                 ]}
               >
-                {feedback.message}
-              </Text>
-            ) : null}
+                {isSubmitting ? (
+                  <ActivityIndicator color={Colors.white} />
+                ) : (
+                  <Text style={styles.primaryButtonText}>Kayıt Ol</Text>
+                )}
+              </Pressable>
 
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Kayıt Ol"
-              accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }}
-              disabled={isSubmitting}
-              onPress={handleSubmit}
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed && !isSubmitting && styles.pressed,
-                isSubmitting && styles.disabledButton,
-              ]}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color={Colors.white} />
-              ) : (
-                <Text style={styles.primaryButtonText}>Kayıt Ol</Text>
-              )}
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Giriş Yap ekranına git"
-              onPress={() => router.replace('/login')}
-              style={({ pressed }) => [styles.linkButton, pressed && styles.pressed]}
-            >
-              <Text style={styles.linkText}>Zaten hesabınız var mı? Giriş Yap</Text>
-            </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Giriş Yap ekranına git"
+                onPress={() => router.replace('/login')}
+                style={({ pressed }) => [styles.linkButton, pressed && styles.pressed]}
+              >
+                <Text style={styles.linkText}>Zaten hesabınız var mı? Giriş Yap</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -223,6 +283,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
@@ -262,6 +325,30 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     paddingHorizontal: 14,
     paddingVertical: 12,
+  },
+  passwordInputRow: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 10,
+    backgroundColor: Colors.surface,
+  },
+  passwordInput: {
+    flex: 1,
+    minHeight: 48,
+    color: Colors.text,
+    fontSize: FontSizes.md,
+    paddingLeft: 14,
+    paddingRight: 0,
+    paddingVertical: 12,
+  },
+  passwordVisibilityButton: {
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   inputError: {
     borderColor: Colors.danger,
