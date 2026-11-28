@@ -1,8 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Pressable,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -32,6 +35,7 @@ export default function LoginScreen() {
   const [errors, setErrors] = useState<LoginFieldErrors>({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const updateField = (field: keyof LoginFormValues, value: string) => {
@@ -84,88 +88,116 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <View style={styles.container}>
-          <Text style={styles.brand}>PharmAssist</Text>
+      <KeyboardAvoidingView
+        behavior={
+          Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined
+        }
+        style={styles.keyboardAvoidingView}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <Text style={styles.brand}>PharmAssist</Text>
 
-          <ScreenHeader
-            title="Giriş Yap"
-            subtitle="İlaç bilgilerinize ve hatırlatıcılarınıza erişin."
-          />
+            <ScreenHeader
+              title="Giriş Yap"
+              subtitle="İlaç bilgilerinize ve hatırlatıcılarınıza erişin."
+            />
 
-          <View style={styles.form}>
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>E-posta</Text>
-              <TextInput
-                accessibilityLabel="E-posta"
-                accessibilityHint="E-posta adresinizi girin."
-                autoComplete="email"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                onChangeText={(value) => updateField('email', value)}
-                placeholder="ornek@eposta.com"
-                placeholderTextColor={Colors.textSecondary}
-                returnKeyType="next"
-                style={[styles.input, errors.email && styles.inputError]}
-                value={values.email}
-              />
-              {renderFieldError(errors.email)}
+            <View style={styles.form}>
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>E-posta</Text>
+                <TextInput
+                  accessibilityLabel="E-posta"
+                  accessibilityHint="E-posta adresinizi girin."
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  onChangeText={(value) => updateField('email', value)}
+                  placeholder="ornek@eposta.com"
+                  placeholderTextColor={Colors.textSecondary}
+                  returnKeyType="next"
+                  style={[styles.input, errors.email && styles.inputError]}
+                  value={values.email}
+                />
+                {renderFieldError(errors.email)}
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Şifre</Text>
+                <View style={[styles.passwordInputRow, errors.password && styles.inputError]}>
+                  <TextInput
+                    accessibilityLabel="Şifre"
+                    accessibilityHint="Hesap şifrenizi girin."
+                    autoComplete="current-password"
+                    onChangeText={(value) => updateField('password', value)}
+                    onSubmitEditing={handleSubmit}
+                    placeholder="Şifreniz"
+                    placeholderTextColor={Colors.textSecondary}
+                    returnKeyType="go"
+                    secureTextEntry={!isPasswordVisible}
+                    style={styles.passwordInput}
+                    value={values.password}
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={isPasswordVisible ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                    accessibilityState={{ selected: isPasswordVisible }}
+                    onPress={() => setIsPasswordVisible((visible) => !visible)}
+                    style={({ pressed }) => [
+                      styles.passwordVisibilityButton,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <Ionicons
+                      name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                      size={22}
+                      color={Colors.textSecondary}
+                    />
+                  </Pressable>
+                </View>
+                {renderFieldError(errors.password)}
+              </View>
+
+              {feedback ? (
+                <Text accessibilityRole="alert" style={styles.feedback}>
+                  {feedback}
+                </Text>
+              ) : null}
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Giriş Yap"
+                accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }}
+                disabled={isSubmitting}
+                onPress={handleSubmit}
+                style={({ pressed }) => [
+                  styles.primaryButton,
+                  pressed && !isSubmitting && styles.pressed,
+                  isSubmitting && styles.disabledButton,
+                ]}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color={Colors.white} />
+                ) : (
+                  <Text style={styles.primaryButtonText}>Giriş Yap</Text>
+                )}
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Kayıt Ol ekranına git"
+                onPress={() => router.replace('/register')}
+                style={({ pressed }) => [styles.linkButton, pressed && styles.pressed]}
+              >
+                <Text style={styles.linkText}>Hesabınız yok mu? Kayıt Ol</Text>
+              </Pressable>
             </View>
-
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Şifre</Text>
-              <TextInput
-                accessibilityLabel="Şifre"
-                accessibilityHint="Hesap şifrenizi girin."
-                autoComplete="current-password"
-                onChangeText={(value) => updateField('password', value)}
-                onSubmitEditing={handleSubmit}
-                placeholder="Şifreniz"
-                placeholderTextColor={Colors.textSecondary}
-                returnKeyType="go"
-                secureTextEntry
-                style={[styles.input, errors.password && styles.inputError]}
-                value={values.password}
-              />
-              {renderFieldError(errors.password)}
-            </View>
-
-            {feedback ? (
-              <Text accessibilityRole="alert" style={styles.feedback}>
-                {feedback}
-              </Text>
-            ) : null}
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Giriş Yap"
-              accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }}
-              disabled={isSubmitting}
-              onPress={handleSubmit}
-              style={({ pressed }) => [
-                styles.primaryButton,
-                pressed && !isSubmitting && styles.pressed,
-                isSubmitting && styles.disabledButton,
-              ]}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color={Colors.white} />
-              ) : (
-                <Text style={styles.primaryButtonText}>Giriş Yap</Text>
-              )}
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Kayıt Ol ekranına git"
-              onPress={() => router.replace('/register')}
-              style={({ pressed }) => [styles.linkButton, pressed && styles.pressed]}
-            >
-              <Text style={styles.linkText}>Hesabınız yok mu? Kayıt Ol</Text>
-            </Pressable>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -174,6 +206,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
@@ -207,6 +242,30 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     paddingHorizontal: 14,
     paddingVertical: 12,
+  },
+  passwordInputRow: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 10,
+    backgroundColor: Colors.surface,
+  },
+  passwordInput: {
+    flex: 1,
+    minHeight: 48,
+    color: Colors.text,
+    fontSize: FontSizes.md,
+    paddingLeft: 14,
+    paddingRight: 0,
+    paddingVertical: 12,
+  },
+  passwordVisibilityButton: {
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   inputError: {
     borderColor: Colors.danger,
